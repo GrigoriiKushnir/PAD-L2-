@@ -1,7 +1,9 @@
 import socket
 import json
-
-import xml.etree.ElementTree as ET
+from xml.dom.minidom import parseString
+from lxml import etree
+from xml.etree import ElementTree
+from io import StringIO
 
 
 class MyClient:
@@ -27,12 +29,22 @@ class MyClient:
 if __name__ == "__main__":
     client = MyClient(xml=True)
     info = client.get_info()
-    print(info)
-    # print(info)
-    # xml = dicttoxml.dicttoxml(info, attr_type=False)
-    # print(xml)
-    # with open("f.xml", "wb") as f:
-    #     f.write(xml)
-        # tree = ET.parse("f.xml")
-        # root = tree.getroot()
-        # print(root.tag)
+    dom = parseString(info)
+    # print(dom.toprettyxml())
+    with open("f.xml", "wb") as f:
+        f.write(info.encode())
+
+    # relaxng_doc = etree.parse("ng_schema")
+    # relaxng = etree.RelaxNG(relaxng_doc)
+
+    # xmlschema_doc = etree.parse("f.xsd")
+    # xmlschema = etree.XMLSchema(xmlschema_doc)
+
+    dtd = etree.DTD("dtd")
+
+    xml_name = "f.xml"
+    doc = etree.parse(xml_name)
+
+    dtd.assertValid(xml_name)
+    # relaxng.assertValid(doc)
+    # xmlschema.assertValid(doc)

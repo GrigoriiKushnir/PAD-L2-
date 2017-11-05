@@ -70,5 +70,6 @@ class MyNode:
 if __name__ == "__main__":
     node = MyNode(master=True, slaves=None, port=31102)
     #node = MyNode(master=False, slaves=None, port=31103)
-    #node = MyNode(master=False, slaves=None, port=31104)
+    #node = MyNode(master=True, slaves=None, port=31106)
+    #node = MyNode(master=False, slaves=None, port=31107)
     node.start()

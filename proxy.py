@@ -44,6 +44,8 @@ class MyProxy:
                 print("Could not retrieve data: ", exc)
                 pass
         if message.get('xml'):
+            print(data)
+            # my_item_func = lambda x: "custom_item"
             xml = dicttoxml.dicttoxml(data, attr_type=False)
             print(xml)
             writer.write(xml)

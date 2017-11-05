@@ -38,7 +38,7 @@
   {
     "ip": "localhost",
     "port": 31106,
-    "master": false,
+    "master": true,
     "slaves": ["n7"]
   },
   "n7":
