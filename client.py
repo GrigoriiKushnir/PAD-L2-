@@ -55,7 +55,7 @@ if __name__ == "__main__":
     # filter_op = "startswith"
     # filter_val = "n"
     filter_field = "age"
-    filter_op = "__eq__"
+    filter_op = "__ge__"
     filter_val = 71
     client = MyClient(xml=xml_bool, sort='-age',
                       filt={
