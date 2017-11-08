@@ -17,7 +17,8 @@ class MyProxy:
         data = []
         message = json.loads((yield from reader.read(1024)).decode('utf-8'))
         sort = message.get("sort")
-        print(sort)
+        filt = message.get("filter")
+        print(filt)
         for node in self.conf:
             master = self.conf[node]["master"]
             try:
@@ -30,7 +31,8 @@ class MyProxy:
                     payload = json.dumps({
                         'type': 'command',
                         'command': 'get',
-                        "sort": sort
+                        'sort': sort,
+                        'filter': filt
                     }).encode('utf-8')
                     writer_node.write(payload)
                     node_resp = json.loads((yield from reader_node.read(1024)).decode())

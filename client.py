@@ -26,11 +26,12 @@ Draft4Validator.check_schema(schema)
 
 
 class MyClient:
-    def __init__(self, xml, sort=None, proxy_port=31337, proxy_ip='localhost'):
+    def __init__(self, xml, sort=None, filt=None, proxy_port=31337, proxy_ip='localhost'):
         self.proxy_ip = proxy_ip
         self.proxy_port = proxy_port
         self.xml = xml
         self.sort = sort
+        self.filt = filt
 
     def get_info(self):
         conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -39,7 +40,8 @@ class MyClient:
             'type': 'command',
             'command': 'get',
             'xml': self.xml,
-            'sort': self.sort
+            'sort': self.sort,
+            'filter': self.filt
         }).encode('utf-8')
         conn.send(payload)
         data = conn.recv(1024)
@@ -49,7 +51,18 @@ class MyClient:
 
 if __name__ == "__main__":
     xml_bool = True
-    client = MyClient(xml=xml_bool, sort='-age')
+    # filter_field = "name"
+    # filter_op = "startswith"
+    # filter_val = "n"
+    filter_field = "age"
+    filter_op = "__eq__"
+    filter_val = 71
+    client = MyClient(xml=xml_bool, sort='-age',
+                      filt={
+                          "field": filter_field,
+                          "op": filter_op,
+                          "val": filter_val
+                      })
     info = client.get_info()
     print(info)
 

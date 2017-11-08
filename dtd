@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE root [
-        <!ELEMENT root (item)*>
-        <!ELEMENT item (n2|n3|n6|n7)*>
-        <!ELEMENT n2 (item)*>
-        <!ELEMENT n3 (item)*>
-        <!ELEMENT n6 (item)*>
-        <!ELEMENT n7 (item)*>
-        ]>

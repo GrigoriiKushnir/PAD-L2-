@@ -30,22 +30,41 @@ class MyNode:
         sort_key = sort_field if "-" not in sort_field else sort_field[1:]
         return sorted(data_dict[self.node_nr], key=itemgetter(sort_key), reverse=sort_desc)
 
+    def filter_data(self, data, filt):
+        field = filt["field"]
+        op = filt["op"]
+        val = filt["val"]
+        resp = []
+        for d in data:
+            op_func = getattr(d[field], op)
+            if op_func(val):
+                resp.append(d)
+        return resp
+
+    def data_edit(self, data, sort, filt):
+        if sort:
+            data += self.sort_data(sort)
+        if filt:
+            data = self.filter_data(data, filt)
+        if sort is None and filt is None:
+            data = data_dict[self.node_nr]
+        return data
+
     @asyncio.coroutine
     def handle_message(self, reader, writer):
         message = json.loads((yield from reader.read(1024)).decode('utf-8'))
         sort = message.get("sort")
+        filt = message.get("filter")
         if self.master:
             data = []
-            if sort:
-                data += self.sort_data(sort)
-            else:
-                data += data_dict[self.node_nr]
+            data = self.data_edit(data, sort, filt)
             slaves = self.conf[self.node_nr]["slaves"]
             for n in slaves:
                 payload = json.dumps({
                     'type': 'command',
                     'command': 'get',
-                    'sort': sort
+                    'sort': sort,
+                    'filter': filt
                 }).encode('utf-8')
                 ip = self.conf[n]["ip"]
                 port = self.conf[n]["port"]
@@ -55,14 +74,11 @@ class MyNode:
                 writer_node.write(payload)
                 node_resp = yield from reader_node.read(1024)
                 data += json.loads(node_resp.decode()).get('payload')
-            print(data)
             writer.write(json.dumps(data).encode())
             yield from writer.drain()
         else:
-            if sort:
-                pl = self.sort_data(sort)
-            else:
-                pl = data_dict[self.node_nr]
+            pl = []
+            pl = self.data_edit(pl, sort, filt)
             payload = json.dumps({
                 'type': 'response',
                 'payload': pl,
