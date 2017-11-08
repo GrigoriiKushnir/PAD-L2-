@@ -1,13 +1,6 @@
 import asyncio
 import json
-import collections
 import dicttoxml
-
-MESSAGE_TYPES = collections.namedtuple(
-    'MessageTypes', ('command', 'error', 'response', 'lwt', 'check_alive', 'received')
-)(*('command', 'error', 'response', 'lwt', 'check_alive', 'received'))
-COMMANDS = collections.namedtuple('Commands', ('get', 'subscribe', 'disconnect', 'keep_alive')
-                                  )(*('get', 'subscribe', 'disconnect', 'keep_alive'))
 
 
 # noinspection PyTupleAssignmentBalance
@@ -23,6 +16,8 @@ class MyProxy:
     def handle_message(self, reader, writer):
         data = []
         message = json.loads((yield from reader.read(1024)).decode('utf-8'))
+        sort = message.get("sort")
+        print(sort)
         for node in self.conf:
             master = self.conf[node]["master"]
             try:
@@ -35,19 +30,17 @@ class MyProxy:
                     payload = json.dumps({
                         'type': 'command',
                         'command': 'get',
+                        "sort": sort
                     }).encode('utf-8')
                     writer_node.write(payload)
-                    node_resp = yield from reader_node.read(1024)
-                    print(node_resp.decode())
-                    data.append(json.loads(node_resp.decode()))
+                    node_resp = json.loads((yield from reader_node.read(1024)).decode())
+                    data += node_resp
+                    print(data)
             except Exception as exc:
                 print("Could not retrieve data: ", exc)
                 pass
         if message.get('xml'):
-            print(data)
-            # my_item_func = lambda x: "custom_item"
-            xml = dicttoxml.dicttoxml(data, attr_type=False)
-            print(xml)
+            xml = dicttoxml.dicttoxml(data, attr_type=False, custom_root="items")
             writer.write(xml)
             yield from writer.drain()
         else:

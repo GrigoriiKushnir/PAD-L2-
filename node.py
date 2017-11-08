@@ -1,19 +1,21 @@
 import asyncio
 import json
+from multiprocessing import Process
+from operator import itemgetter
 
 data_dict = {
-    "n1": [11, 12, 13, 14, 15],
-    "n2": [21, 22, 23, 24, 25],
-    "n3": [31, 32, 33, 34, 35],
-    "n4": [41, 42, 43, 44, 45],
-    "n5": [51, 52, 53, 54, 55],
-    "n6": [61, 62, 63, 64, 65],
-    "n7": [71, 72, 73, 74, 75]
+    "n1": [{"name": "aa", "age": 11}, {"name": "bb", "age": 12}],
+    "n2": [{"name": "cc", "age": 21}, {"name": "dd", "age": 22}],
+    "n3": [{"name": "ee", "age": 31}, {"name": "ff", "age": 32}],
+    "n4": [{"name": "gg", "age": 41}, {"name": "hh", "age": 42}],
+    "n5": [{"name": "ii", "age": 51}, {"name": "jj", "age": 52}],
+    "n6": [{"name": "kk", "age": 61}, {"name": "ll", "age": 62}],
+    "n7": [{"name": "mm", "age": 71}, {"name": "nn", "age": 72}]
 }
 
 
 class MyNode:
-    def __init__(self, master, slaves, port, ip='localhost'):
+    def __init__(self, master, port, ip='localhost', slaves=None):
         self.ip = ip
         self.port = port
         self.slaves = slaves
@@ -23,15 +25,27 @@ class MyNode:
         with open("conf.json") as config:
             self.conf = json.load(config)
 
+    def sort_data(self, sort_field):
+        sort_desc = True if "-" in sort_field else False
+        sort_key = sort_field if "-" not in sort_field else sort_field[1:]
+        return sorted(data_dict[self.node_nr], key=itemgetter(sort_key), reverse=sort_desc)
+
     @asyncio.coroutine
     def handle_message(self, reader, writer):
+        message = json.loads((yield from reader.read(1024)).decode('utf-8'))
+        sort = message.get("sort")
         if self.master:
-            data = {self.node_nr: data_dict[self.node_nr]}
+            data = []
+            if sort:
+                data += self.sort_data(sort)
+            else:
+                data += data_dict[self.node_nr]
             slaves = self.conf[self.node_nr]["slaves"]
             for n in slaves:
                 payload = json.dumps({
                     'type': 'command',
                     'command': 'get',
+                    'sort': sort
                 }).encode('utf-8')
                 ip = self.conf[n]["ip"]
                 port = self.conf[n]["port"]
@@ -40,16 +54,18 @@ class MyNode:
                 )
                 writer_node.write(payload)
                 node_resp = yield from reader_node.read(1024)
-                data[n] = json.loads(node_resp.decode()).get('payload')
+                data += json.loads(node_resp.decode()).get('payload')
             print(data)
             writer.write(json.dumps(data).encode())
             yield from writer.drain()
         else:
-            message = data_dict[self.node_nr]
-            print(message)
+            if sort:
+                pl = self.sort_data(sort)
+            else:
+                pl = data_dict[self.node_nr]
             payload = json.dumps({
                 'type': 'response',
-                'payload': message,
+                'payload': pl,
             }).encode('utf-8')
             writer.write(payload)
             yield from writer.drain()
@@ -67,9 +83,19 @@ class MyNode:
         self.loop.run_until_complete(proxy.wait_closed())
         self.loop.close()
 
-if __name__ == "__main__":
-    node = MyNode(master=True, slaves=None, port=31102)
-    #node = MyNode(master=False, slaves=None, port=31103)
-    #node = MyNode(master=True, slaves=None, port=31106)
-    #node = MyNode(master=False, slaves=None, port=31107)
+
+def start_node(master, port):
+    node = MyNode(master=master, port=port)
     node.start()
+
+
+if __name__ == "__main__":
+    p2 = Process(target=start_node, args=(True, 31102))
+    p3 = Process(target=start_node, args=(False, 31103))
+    p6 = Process(target=start_node, args=(True, 31106))
+    p7 = Process(target=start_node, args=(False, 31107))
+
+    p2.start()
+    p3.start()
+    p6.start()
+    p7.start()
