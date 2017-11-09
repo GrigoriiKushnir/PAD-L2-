@@ -1,5 +1,5 @@
 #### Installation
-To run this project you need Python>=3.5 (recommended 3.6).
+To run this project you need Python>=3.4 (recommended 3.5).
 [How to install it?](https://www.python.org/downloads/)
 
 Pip (python package manager) should be installed with Python >= 3.5. However,
@@ -19,9 +19,10 @@ This project has 3 components:
 - Node;
 - Client;
 
-Proxy (`src/proxy.py`) listens on `localhost:31337` for requests from clients.
+Proxy (`src/proxy.py`) listens on `localhost:31337` for requests from clients. On a request from the client, sends
+requests to all master nodes to retrieve data. Returns data to client in json or xml format.
 
-Node (`src/node.py`) listens on a port taken given by user.
+Node (`src/node.py`) listens on a port based on config file. 
 Reads from 'files/config.json' it's `master` and `slaves` parameters.
 Slaves return their data to any who asks them and edit it if needed based on request (filter/sort), see more in
 `docs/protocol-specs.md`.
@@ -29,7 +30,8 @@ Masters edit their data if needed and request data from slaves. After parsing th
 to proxy.
 
 Client requests data from Proxy. Client can specify the format they want the data to be returned, XML or JSON. Client
-validates the data using RELAXNG for XML ('files/ng_schema') or JSONschema for JSON ('files/schema.json').
+validates the data using RELAXNG for XML ('files/ng_schema') or JSONschema for JSON ('files/schema.json'). Can specify
+filtering and sorting options.
 
 See protocol-specs for more info about client-proxy-nodes communication.
 

@@ -26,7 +26,7 @@ class MyClient:
         conn.send(payload)
         data = conn.recv(1024)
         conn.close()
-        return data.decode('utf-8')
+        return json.loads(data.decode("utf-8")).get("payload")
 
 
 if __name__ == "__main__":
@@ -44,7 +44,6 @@ if __name__ == "__main__":
                           "val": filter_val
                       })
     info = client.get_info()
-    print(info)
 
     if xml_bool:
         dom = parseString(info)

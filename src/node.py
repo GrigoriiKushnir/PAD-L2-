@@ -75,7 +75,11 @@ class MyNode:
                 writer_node.write(payload)
                 node_resp = yield from reader_node.read(1024)
                 data += json.loads(node_resp.decode()).get('payload')
-            writer.write(json.dumps(data).encode())
+            payload = json.dumps({
+                    'type': 'response',
+                    'payload': data,
+                }).encode('utf-8')
+            writer.write(payload)
             yield from writer.drain()
         else:
             pl = []

@@ -18,7 +18,6 @@ class MyProxy:
         message = json.loads((yield from reader.read(1024)).decode('utf-8'))
         sort = message.get("sort")
         filt = message.get("filter")
-        print(filt)
         for node in self.conf:
             master = self.conf[node]["master"]
             try:
@@ -35,18 +34,26 @@ class MyProxy:
                         'filter': filt
                     }).encode('utf-8')
                     writer_node.write(payload)
-                    node_resp = json.loads((yield from reader_node.read(1024)).decode())
+                    node_resp = json.loads((yield from reader_node.read(1024)).decode()).get("payload")
+                    print(node_resp)
                     data += node_resp
-                    print(data)
             except Exception as exc:
                 print("Could not retrieve data: ", exc)
                 pass
         if message.get('xml'):
-            xml = dicttoxml.dicttoxml(data, attr_type=False, custom_root="items")
-            writer.write(xml)
+            xml = dicttoxml.dicttoxml(data, attr_type=False, custom_root="items").decode()
+            payload = json.dumps({
+                'type': 'response',
+                'payload': xml,
+            }).encode('utf-8')
+            writer.write(payload)
             yield from writer.drain()
         else:
-            writer.write(json.dumps(data).encode())
+            payload = json.dumps({
+                'type': 'response',
+                'payload': json.dumps(data),
+            }).encode("utf-8")
+            writer.write(payload)
             yield from writer.drain()
 
     def start(self):
