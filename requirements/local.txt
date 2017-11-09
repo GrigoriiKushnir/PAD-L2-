@@ -1,0 +1,5 @@
+-r base.txt
+
+lxml==3.5.0
+dicttoxml==1.7.4
+jsonschema==2.6.0

@@ -22,7 +22,7 @@ class MyNode:
         self.master = master
         self.loop = asyncio.get_event_loop()
         self.node_nr = "n" + str(self.port % 10)
-        with open("conf.json") as config:
+        with open("files/conf.json") as config:
             self.conf = json.load(config)
 
     def sort_data(self, sort_field):
@@ -30,6 +30,7 @@ class MyNode:
         sort_key = sort_field if "-" not in sort_field else sort_field[1:]
         return sorted(data_dict[self.node_nr], key=itemgetter(sort_key), reverse=sort_desc)
 
+    @staticmethod
     def filter_data(self, data, filt):
         field = filt["field"]
         op = filt["op"]
@@ -45,7 +46,7 @@ class MyNode:
         if sort:
             data += self.sort_data(sort)
         if filt:
-            data = self.filter_data(data, filt)
+            data = self.filter_data(self=self, data=data, filt=filt)
         if sort is None and filt is None:
             data = data_dict[self.node_nr]
         return data

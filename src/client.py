@@ -4,26 +4,6 @@ from xml.dom.minidom import parseString
 from lxml import etree
 from jsonschema import validate, Draft4Validator
 
-schema = {
-    "type": "array",
-    "$schema": "http://json-schema.org/schema#",
-    "items": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string",
-                "default": "",
-            },
-            "age": {
-                "type": "integer",
-                "default": 0,
-            }
-        }
-    }
-}
-
-Draft4Validator.check_schema(schema)
-
 
 class MyClient:
     def __init__(self, xml, sort=None, filt=None, proxy_port=31337, proxy_ip='localhost'):
@@ -50,7 +30,7 @@ class MyClient:
 
 
 if __name__ == "__main__":
-    xml_bool = True
+    xml_bool = False
     # filter_field = "name"
     # filter_op = "startswith"
     # filter_val = "n"
@@ -69,14 +49,19 @@ if __name__ == "__main__":
     if xml_bool:
         dom = parseString(info)
         print(dom.toprettyxml())
-        with open("f.xml", "wb") as f:
+        with open("files/f.xml", "wb") as f:
             f.write(info.encode())
-        xml_name = "f.xml"
+        xml_name = "files/f.xml"
         doc = etree.parse(xml_name)
-        relaxng_doc = etree.parse("ng_schema")
+        relaxng_doc = etree.parse("files/ng_schema")
         relaxng = etree.RelaxNG(relaxng_doc)
-
         print(relaxng.validate(doc))
         relaxng.assertValid(doc)
     else:
+        with open("files/schema.json", "r") as s:
+            schema = json.loads(s.read())
+        Draft4Validator.check_schema(schema)
         validate(json.loads(info), schema)
+        with open("files/f.json", "wb") as f:
+            f.write(info.encode())
+

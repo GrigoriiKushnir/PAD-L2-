@@ -9,7 +9,7 @@ class MyProxy:
         self.ip = ip
         self.port = port
         self.loop = asyncio.get_event_loop()
-        with open("conf.json") as config:
+        with open("files/conf.json") as config:
             self.conf = json.load(config)
 
     @asyncio.coroutine
