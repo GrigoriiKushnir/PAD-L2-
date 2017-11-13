@@ -8,7 +8,7 @@ if you can't find it, check out [this page](https://pip.pypa.io/en/stable/instal
 #### Dependencies
 
 This project uses jsonschema, lxml and dicttoxml libraries.
-The dependencies is stated in: `./requirements/local.txt`.
+The dependencies are stated in: `./requirements/local.txt`.
 Just execute
 `pip install -r requirements/local.txt`
 
